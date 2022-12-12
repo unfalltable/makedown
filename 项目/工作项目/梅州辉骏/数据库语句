@@ -1,0 +1,129 @@
+## 生产计划预警
+
+### 告警数统计
+
+```sql
+SELECT
+	count(*) AS num,
+	@fqty := sum( FQTY ) AS fqty,
+	@productNum := sum( productNum ) AS productNum,
+	IF (@fqty = 0, NULL, @productNum / @fqty ) AS lineEfficiency,
+	count( IF ( FQTY = 0, NULL, productNum / FQTY ) >= 59.0 && IF ( FQTY = 0, NULL, productNum / FQTY ) < 38.0 OR NULL ) AS redNum, 
+	count( IF ( FQTY = 0, NULL, productNum / FQTY ) >= 38.0 && IF ( FQTY = 0, NULL, productNum / FQTY ) < 25.0 OR NULL ) AS yellowNum, 
+	count( IF ( FQTY = 0, NULL, productNum / FQTY ) >= 25.0  OR NULL  ) AS greenNum 
+	
+FROM
+	(
+	SELECT
+		FLOT mesDocNo,
+		FREALINE lineNo,
+		DATE_FORMAT( FRESCHECKOUTTIME, '%Y-%m-%d' ) lineTime,
+		sum( FQTY ) productNum,
+		sum( FFAILQTY ) badNum 
+	FROM
+		TBLMESUNITOPRES 
+	WHERE
+		FOP = 'PACK' 
+		AND DATE_FORMAT( FRESCHECKOUTTIME, '%Y-%m-%d' ) = DATE_FORMAT( now(), '%Y-%m-%d' ) 
+	GROUP BY
+		FLOT,
+		FREALINE,
+		DATE_FORMAT( FRESCHECKOUTTIME, '%Y-%m-%d' ) 
+	) mesLine
+LEFT JOIN TBLLOTPERLINE ON mesDocNo = FMO 
+AND lineNo = FREALLINE 
+LIMIT 1
+```
+
+### 销售订单统计
+
+```sql
+SELECT
+	mesDocNo,
+	lineNo,
+	FQTY,
+	lineTime,
+	productNum 
+FROM (
+	SELECT
+		FLOT mesDocNo,
+		FREALINE lineNo,
+		DATE_FORMAT( FRESCHECKOUTTIME, '%Y' ) lineTime,
+		sum( FQTY ) productNum,
+		sum( FFAILQTY ) badNum 
+	FROM
+		TBLMESUNITOPRES 
+	WHERE
+		FOP = 'PACK' 
+		AND DATE_FORMAT( FRESCHECKOUTTIME, '%Y' ) = DATE_FORMAT( now(), '%Y' ) 
+	GROUP BY
+		FLOT,
+		FREALINE,
+		DATE_FORMAT( FRESCHECKOUTTIME, '%Y' ) 
+	) mesLine
+LEFT JOIN TBLLOTPERLINE ON mesDocNo = FMO 
+AND lineNo = FREALLINE 
+LIMIT 0, 10
+```
+
+
+
+## 供应商订单预警
+
+```sql
+SELECT
+	count(*) AS num,
+	@planNum := sum( SFAA012 ) AS planNum,
+	@productNum := sum( SFAA050 ) AS productNum,
+	IF ( @planNum = 0, NULL, @productNum / @planNum ) AS rate,
+	count( 
+        IF ( SFAA012 = 0, NULL, SFAA050 / SFAA012 ) >= 23.0 
+        && IF ( SFAA012 = 0, NULL, SFAA050 / SFAA012 ) < 38.0 OR NULL 
+    ) AS redNum, 
+	count( 
+        IF ( SFAA012 = 0, NULL, SFAA050 / SFAA012 ) >= 38.0 
+        && IF ( SFAA012 = 0, NULL, SFAA050 / SFAA012 ) < 74.0 OR NULL 
+    ) AS yellowNum, 
+	count( 
+        IF ( SFAA012 = 0, NULL, SFAA050 / SFAA012 ) >= 74.0  OR NULL 
+    ) AS greenNum 
+FROM SFAA_T  (工單單頭檔)
+LEFT JOIN XMDD_T (訂單交期明細檔)
+ON ( 
+    CASE 
+        WHEN SFAA022 IS NOT NULL THEN SFAA022 
+        WHEN SFAA006 IS NOT NULL THEN SFAA006 
+        WHEN SFAAUD001 IS NOT NULL THEN SFAAUD001 
+    END
+) = XMDDDOCNO 
+AND ( 
+    CASE 
+        WHEN SFAA022 IS NOT NULL THEN SFAA023
+        WHEN SFAA006 IS NOT NULL THEN SFAA007 
+        WHEN SFAAUD001 IS NOT NULL THEN 1 
+    END 
+) = XMDDSEQ 
+AND ( 
+    CASE 
+        WHEN SFAA022 IS NOT NULL THEN SFAA024 
+        WHEN SFAA006 IS NOT NULL THEN SFAA008 
+        WHEN SFAAUD001 IS NOT NULL THEN 1 
+    END 
+) = XMDDSEQ1
+LEFT JOIN XMDC_T(訂單單身明細檔) ON XMDCDOCNO = XMDDDOCNO  AND XMDCSEQ = XMDDSEQ
+LEFT JOIN IMAAL_T(料件多语言档) mt ON XMDC001 = mt.IMAAL001  AND mt.imaal002 = 'zh_CN'
+LEFT JOIN IMAAL_T st ON SFAA010 = st.IMAAL001  AND st.imaal002 = 'zh_CN'
+LEFT JOIN XMDA_T(订单单头档) ON XMDADOCNO = XMDCDOCNO
+LEFT JOIN PMAAL_T(交易对象主档多语言档) ON SFAA017 = PMAAL001  AND PMAAL002 = 'zh_CN' 
+WHERE
+	XMDASTUS = 'Y' 
+	AND SFAASTUS IN ( 'F' ) 
+	AND XMDASITE = 'JX' 
+	AND XMDCSITE = 'JX' 
+	AND XMDDSITE = 'JX' 
+	AND SFAASITE = 'JX' 
+	AND substr( SFAADOCNO, 4, 4 ) IN ( 'SF02', 'DB01', 'DB02', 'PM28' ) 
+	AND DATE_FORMAT( SFAA020, '%Y' ) = DATE_FORMAT( now(), '%Y' ) 
+LIMIT 1
+```
+

@@ -723,7 +723,7 @@ tags: [MySql]
 
 ### 条件处理
 
-![image-20220320155557326](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220320155557326.png)
+![image-20220320155557326](C:\Users\BDA\Documents\Note\pic\image-20220320155557326.png)
 
 ## 事务
 
@@ -785,7 +785,7 @@ tags: [MySql]
     - 脏读，不可重复读，幻读都可避免
     - 性能十分低下
 
-![image-20220318132259385](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220318132259385.png)
+![image-20220318132259385](C:\Users\BDA\Documents\Note\pic\image-20220318132259385.png)
 
 ### SavePoint
 
@@ -957,9 +957,9 @@ end
 - Update触发器
 - Delete触发器
 
-![image-20220320160434561](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220320160434561.png)
+![image-20220320160434561](C:\Users\BDA\Documents\Note\pic\image-20220320160434561.png)
 
-![image-20220320160526307](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220320160526307.png)
+![image-20220320160526307](C:\Users\BDA\Documents\Note\pic\image-20220320160526307.png)
 
 ## InnoDB引擎
 
@@ -993,15 +993,15 @@ end
 
 - SystemTablespaces
 
-![image-20220320234541137](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220320234541137.png)
+![image-20220320234541137](C:\Users\BDA\Documents\Note\pic\image-20220320234541137.png)
 
-![image-20220320234634719](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220320234634719.png)
+![image-20220320234634719](C:\Users\BDA\Documents\Note\pic\image-20220320234634719.png)
 
-![image-20220320234739425](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220320234739425.png)
+![image-20220320234739425](C:\Users\BDA\Documents\Note\pic\image-20220320234739425.png)
 
 后台线程
 
-![image-20220320235020735](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220320235020735.png)
+![image-20220320235020735](C:\Users\BDA\Documents\Note\pic\image-20220320235020735.png)
 
 ### 事务原理
 
@@ -1106,77 +1106,18 @@ end
 ### 索引语法
 
 - 创建索引
-  - `create index 索引名 on 表名(字段名)`
-
+  - `create index 索引名 on 表名(字段名)` 
+  - `alter table 表名 add index 索引名(字段)` 
 - 查看索引
   - `show index from 索引名`
-
 - 删除索引
   - `drop index 字段名 on 表名`
-
-### SQL性能分析
-
-- SQL执行频率
-  - `show session / global status like 'Com_';` 
-
-![image-20220303145001576](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220303145001576.png)
-
-![image-20220303145009410](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220303145009410.png)
-
-![image-20220303145026485](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220303145026485.png)
-
-![image-20220303150708179](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220303150708179.png)
-
-type中如果使用的是主键索引或唯一索引一般是const
-
-![image-20220303150849789](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220303150849789.png)
-
-### 索引失效的情况
-
-在语句前加上explain查看索引使用情况
-
-- 最左前缀法则
-  - 如果使用了联合索引，查询的字段必须从左往右覆盖该索引，如果跳过其中的某一列索引，该联合索引部分失效，失效的部分从跳过的那一列到后面
-
-- 范围查询
-  - 在联合索引中，如果出现范围查询（>, <），其后的索引失效
-  - 如果是（>=, <=） 则不会失效
-- 索引列计算
-  - 在索引的字段是进行运算，索引将失效
-
-- 字符串不加引号
-  - 字符串不加引号，索引将失效
-
-- 模糊查询
-  - like ‘XX%’    索引不会失效
-  - like ‘%XX’    索引失效
-
-- or连接的条件
-  - or两端的条件都有索引才会使用，一端没有索引全部失效
-
-- 数据分布影响
-  - 如果mysql评估使用全表扫描更快则不会使用索引
-
-### 索引的优化
-
-- 前缀索引
-  - 有些字段内容较长，我们可以取它前一部分建立索引
-  - `create index 索引名 on 表名(字段名(前缀长度))` 
-  - 前缀的长度的大小最好是：
-    -  按前缀长度去重后的数量 / 总数量
-    - 越接近1越好
-
-- 查询的字段尽量覆盖索引，减少 select * 的使用
-
-### 索引的设计原则
-
-- 针对数据量较大，且查询比较频繁的表建立索引
-- 针对于常作为查询条件、排序、分组操作的字段建立索引
-- 尽量选择区分度较高的列作为索引，尽量建立唯一索引，区分度越高，使用索引的效率越高
-- 如果是字符串类型的字段，字段的长度较长，可以针对字段的特点建立前缀索引
-- 尽量使用联合索引，减少单列索引，查询时，联合索引很多时候可以覆盖索引，节省存储空间，避免回表，提高查询效率
-- 要控制索引的数量，索引并不是越多越好，越多维护索引结构的代价越大，会影响增删改的效率
-- 如果索引不能存储null，请在创建表时使用not null约束，当优化器知道每列是否包含null值时，它可以更好的确定哪个索引最有效的用于查询
+  - `alter table 表名 drop index 索引名` 
+- 查看表的索引情况
+  - `show index from 表名` 
+  - `show create table 表名` 
+- 修改索引
+  - 只能通过删除索引再添加索引
 
 ## 锁机制
 
@@ -1220,7 +1161,7 @@ type中如果使用的是主键索引或唯一索引一般是const
 
 - `insert / update / delete / select ... for update` 
 
-![image-20220320175841051](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220320175841051.png)
+![image-20220320175841051](C:\Users\BDA\Documents\Note\pic\image-20220320175841051.png)
 
 ### 行级锁
 
@@ -1233,48 +1174,46 @@ type中如果使用的是主键索引或唯一索引一般是const
   - 允许获取排他锁的事务更新数据，阻止其他事务获得相同数据集的共享锁和排他锁
 
 
-![image-20220320181113652](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220320181113652.png)
+![image-20220320181113652](C:\Users\BDA\Documents\Note\pic\image-20220320181113652.png)
 
-![image-20220320182348192](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220320182348192.png)
+![image-20220320182348192](C:\Users\BDA\Documents\Note\pic\image-20220320182348192.png)
 
 #### 间隙锁
 
 - 
 
-![image-20220320183111394](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220320183111394.png)
+![image-20220320183111394](C:\Users\BDA\Documents\Note\pic\image-20220320183111394.png)
 
-![image-20220320183120778](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220320183120778.png)
+![image-20220320183120778](C:\Users\BDA\Documents\Note\pic\image-20220320183120778.png)
 
 #### 临键锁（next-key lock）
 
 - 间隙锁 + 行锁
 
-## MySQL运维
+## Mysql工具
 
-### Mysql工具
+![image-20220321130500940](C:\Users\BDA\Documents\Note\pic\image-20220321130500940.png)
 
-![image-20220321130500940](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220321130500940.png)
+![image-20220321130746523](C:\Users\BDA\Documents\Note\pic\image-20220321130746523.png)
 
-![image-20220321130746523](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220321130746523.png)
+![image-20220321131301287](C:\Users\BDA\Documents\Note\pic\image-20220321131301287.png)
 
-![image-20220321131301287](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220321131301287.png)
+![image-20220321132826897](C:\Users\BDA\Documents\Note\pic\image-20220321132826897.png)
 
-![image-20220321132826897](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220321132826897.png)
+![image-20220321132929087](C:\Users\BDA\Documents\Note\pic\image-20220321132929087.png)
 
-![image-20220321132929087](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220321132929087.png)
+![image-20220321133539942](C:\Users\BDA\Documents\Note\pic\image-20220321133539942.png)
 
-![image-20220321133539942](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220321133539942.png)
+![image-20220321134719464](C:\Users\BDA\Documents\Note\pic\image-20220321134719464.png)
 
-![image-20220321134719464](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220321134719464.png)
+## 日志
 
-### 日志
-
-##### 错误日志
+### 错误日志
 
 - 进入log下输入
   - `tail -f` 查看实时日志
 
-##### 二进制日志（binlog）
+### 二进制日志（binlog）
 
 - 记录了所有DDL、DML语句
 - 用于数据恢复、主从复制
@@ -1294,25 +1233,25 @@ type中如果使用的是主键索引或唯一索引一般是const
 - 主要用作**主从复制**和**数据恢复** 
 
 
-##### 查询日志
+### 查询日志
 
 - 记录所有操作，默认关闭
 
-##### 慢查询日志
+### 慢查询日志
 
 - 记录执行时间超过long_query_time的sql语句，默认关闭
 
-### 主从复制
+## 主从复制
 
 - Master主库在事务提交时，会把数据变更记录在Binlog中
 - 从库读取主库的Binlog，写入到从库的中继日志Relay Log
 - 从库重做RelayLog中的事件，将改变反映它自己的数据
 
-##### 步骤
+### 步骤
 
 - 主库配置
 
-  - 修改/etc/my.cnf
+  - 修改`/etc/my.cnf` 
 
     - ```yaml
       #mysql服务ID，保证整个集群环境中为唯一，取值范围：1 - 2^32 - 1,默认唯一
@@ -1354,150 +1293,7 @@ type中如果使用的是主键索引或唯一索引一般是const
     - `systemctl restart mysqld`
 
   - 登录mysql，设置主库配置
+
   - 开启同步
+
   - 查看主从状态
-
-### 分库分表
-
-![image-20220321143434064](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220321143434064.png)
-
-![image-20220321143821032](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220321143821032.png)
-
-![image-20220321143939372](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220321143939372.png)
-
-#### MyCat
-
-##### 配置
-
-![image-20220321151919616](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220321151919616.png)
-
-![image-20220321152025319](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220321152025319.png)
-
-![image-20220321152140077](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220321152140077.png)
-
-![image-20220321154733648](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220321154733648.png)
-
-![image-20220321154646037](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220321154646037.png)
-
-##### 垂直分片
-
-![image-20220321162053378](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220321162053378.png)
-
-![image-20220321162120396](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220321162120396.png)
-
-![image-20220321162200323](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220321162200323.png)
-
-![image-20220321161932413](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220321161932413.png)
-
-##### 水平分片
-
-![image-20220321162511985](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220321162511985.png)
-
-##### 分片规则
-
-- 范围分片
-- 取模分片
-- 一致性hash
-  - 针对主键不是纯数字类型
-- 枚举
-- 应用指定
-- 固定分片hash
-  - id值取二进制低10为 & 1111111111
-  - ![image-20220321163541472](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220321163541472.png)
-- 字符串hash解析
-  - 截取子字符串进行hash计算 & 1023
-- 按天分片
-- 按自然月分片
-
-##### 管理
-
-- 登录9066的管理端口
-  - ![image-20220321164806894](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220321164806894.png)
-- 安装Mycat-eye
-  - 需要安装zookeeper
-
-### 读写分离
-
-#### 一主一从
-
-![image-20220321173444449](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220321173444449.png)
-
-![image-20220321173432083](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220321173432083.png)
-
-#### 双主双从
-
-![image-20220321174336949](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220321174336949.png)
-
-![image-20220321174727809](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220321174727809.png)
-
-![image-20220321174741039](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220321174741039.png)
-
-![image-20220321174824361](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220321174824361.png)
-
-![image-20220321174847139](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220321174847139.png)
-
-![image-20220321174902338](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220321174902338.png)
-
-![image-20220321174934332](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220321174934332.png)
-
-![image-20220321175012876](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220321175012876.png)
-
-![image-20220321175107081](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20220321175107081.png)
-
-## 优化
-
-### 索引优化
-
-#### 索引设计原则
-
-- 针对数据量大，查询频繁的表需要建立索引
-- 对经常需要作为查询条件，排序，分组的字段建立索引
-- 对区分度高的字段建立索引，尽量建唯一索引
-- 尽量使用联合索引，并满足最左前缀法则
-- 索引不是越多越好，会影响增删改效率
-- 不能为可以为null的字段建立索引，需要使用 not null 约束
-
-#### 索引优化
-
-- 对较长的字符型字段建立前缀索引
-  - `create Index on 表名(字段(长度))`
-  - 长度 = 去重后的长度 / 总长度 ≈ 1
-- 使用 `force index` 强制使用索引
-
-#### 索引失效的情况
-
-- 没有满足最左前缀法则
-- 联合索引中使用了 > < 
-- like “%xx”
-- 字符串没加引号
-- or两端又一端没有索引
-- MySQL评估走全表更快时
-
-### SQL优化
-
-- 减少`select * `的使用，查询的条件尽量覆盖索引
-- 如果存储介质是机械硬盘，可以设置MRR开启顺序存储，这个功能会将插入的值按id排好序存到buffer中，顺序写入磁盘，提高插入效率，因为机械硬盘需要一个磁盘寻址的过程会影响效率
-- 插入大批量数据时使用 load 指令
-- 手动提交事务
-- 插入时按主键顺序插入
-- MySQL5.6 之后支持索引下推，能减少回表
-- 分页查询时使用 覆盖索引 + 子查询（想查询的id）
-- 排序优化
-  - 在创建索引是可以指定索引排序规则，符合规则的sql语句效率高
-  - 需要注意各字段的升降序，尽量一致，尽量覆盖索引
-  - 可以适当的增大排序缓冲区的大小
-    - `sort_buffer_size` 默认是256k
-- Join 优化
-  - 小表 join 大表
-  - 连接字段需要是索引字段
-  - 左右连接才有优化，内连接的话由mysql自行判断顺序
-  - 增大 join buffer 的大小
-  - 减少不必要的查询字段，可以缓存更多的数据
-  - 大表 join 大表的话可以为大表建立分区
-  - 算法
-    - NLJ算法：双重for，连接字段为非索引就是用这个算法
-    - BNLJ算法：把 join 的驱动表放到了内存 buffer 中，减少了循环次数
-    - INLJ算法：连接字段为索引字段用这个算法，内层表的连接索引字段进行匹配，减少内层表的循环次数
-
-## 连表查询
-

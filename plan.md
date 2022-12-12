@@ -1,0 +1,15 @@
+- 把SpringCloud看完
+- 把sercutity看了，单点登录、获取在线用户等、鉴权等
+- 看sercutity的加密
+- 看一下 BindingResult
+- 文件上传 （MINIP）（OSS）
+- @Schema注解
+- 做一个小程序的项目
+- 看一下 MYSQL怎么处理 full join
+- 过滤器、拦截器、Aop
+- 有时间学一下前端框架
+- 把订单管理看了
+- coalesce
+- 看一下月份统计数据接口
+- 看一下mybatisplus注入器
+- 写一个dockerCompose 和 dockerfile的案例

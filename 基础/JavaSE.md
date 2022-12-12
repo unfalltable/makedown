@@ -1500,11 +1500,11 @@
 
 ## Stream流
 
-#### 思想
+### 思想
 
 ​	关注的是做什么，而不是怎么做，相当于流水线，只能使用一次 
 
-#### 获取流的方法
+### 获取流的方法
 
 ​	1.Collection集合都可以调用默认方法Stream()来获取流
 
@@ -1526,21 +1526,9 @@ Stream<Map.Entry<T, R>> stream = map.entrySet().stream();
 Stream.of(数组)
 ```
 
-#### 常用方法
+### 常用方法
 
-​	void **forEach**(Consumer<T> consumer)		用来遍历流中的数据
-
-​	Stream<T> **filter**(Predicate<T> pre)			  用于过滤流 
-
-​	Stream<T> **map**(Function<R,T> mapper)	 映射到另一个流，比如数据类型转换
-
-​	long count()																 统计流中元素个数
-
-​	Stream<T> **limit**(long maxSize)						截取流中前几个元素
-
-​	Stream<T> **skip**(loskipng maxSize)				跳过几个，截取流中后几个元素
-
-​	static Stream<T> **concat**(stream1,stream2)						截取流中前几个元素
+- reduce()
 
 ## 方法引用
 
@@ -1875,3 +1863,48 @@ C.stream().filter(c -> {
 ```
 
 - 大于0则相同，小于等于0不同
+
+### 除法
+
+- Math.round()
+- `DecimalFormat decimalFormat = new DecimalFormat(".00");`
+
+#### 小数点后取两位
+
+- `String.format("%.2f", num)`
+
+### 各项求比例后和为100%
+
+#### 最大余额法
+
+```java
+/**
+* 最大余额法 求百分比
+*/
+public static List<Integer> calculatePercent(List<Long> list) {
+    Long sum = list.stream().reduce(Long::sum).get();
+    List<Integer> valueInts = new ArrayList<>();
+    List<Double> ds = new ArrayList<>();
+    for (Long percent : list) {
+        double value = percent * 100 / (double) sum;
+        //设置对应的百分比
+        int valueInt = (int) value;
+        valueInts.add(valueInt);
+        //获取小数点后的值
+        double d = value - valueInt;
+        ds.add(d);
+    }
+    //求和：当前各项百分比合计。由于我们舍弃了小数位，所以该合计只会小于等于100
+    int curSum = valueInts.stream().mapToInt(e -> e).sum();
+    while (curSum < 100) {
+        //找出小数余额最大的组，对其进行加1
+        Integer max = valueInts.stream().max(Comparator.comparingDouble(e -> ds.get(valueInts.indexOf(e))
+                                                                       )).get();
+        valueInts.set(valueInts.indexOf(max), max + 1);
+        //当前这个数已经加1了，不应该参与下一轮的竞选
+        ds.set(valueInts.indexOf(max + 1), 0.0);
+        curSum++;
+    }
+    return valueInts;
+}
+```

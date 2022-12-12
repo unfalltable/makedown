@@ -73,8 +73,6 @@ public class TestDataListener extends AnalysisEventListener<TestDTO> {
 </insert>
 ```
 
-
-
 ## Excel导出
 
 ### Excel填充
@@ -106,9 +104,19 @@ excelWrite.finish();
 
 ## 注解
 
-### @ResponseExcel()
+### 导出
+
+#### @ResponseExcel()
 
 - fileName= "Java知识日历20201101测试"
 - sheetName = "同一班的同学名册"
 - columnNames= {"学生姓名","学号","年龄"},classFieldNames = { "name","stuNo","age" }
+
+### 导入
+
+#### @RequestExcel
+
+- 可以指定导入文件的名称，名称相同才能解析，默认是file
+
+## 模板下载
 

@@ -1,2 +1,0 @@
-- [ ] docker file / docker compose
-- [ ] 
