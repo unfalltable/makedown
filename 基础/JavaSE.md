@@ -1528,7 +1528,18 @@ Stream.of(数组)
 
 ### 常用方法
 
-- reduce()
+#### reduce() 
+
+- 实现聚合计算，求和等等
+- Identity : 定义一个元素代表是归并操作的初始值，如果Stream 是空的，也是Stream 的默认结果
+- Accumulator: 定义一个带两个参数的函数，第一个参数是上个归并函数的返回值，第二个是Strem 中下一个元素。
+- Combiner: 调用一个函数来组合归并操作的结果，当归并是并行执行或者当累加器的函数和累加器的实现类型不匹配时才会调用此函数。
+
+#### mapToXXX()
+
+- 映射为对应的类型，有Int、Long、Double
+- 后可接求大小、平均值、求和等等
+
 
 ## 方法引用
 
@@ -1851,60 +1862,3 @@ class MyInvocationHandler implements InvocationHandler{
   - t可以为空
 - Optional对象.orElse(T t)
   - Optional对象为空则返回t
-
-## 技巧
-
-### 比较两个集合对象的异同
-
-```java
-C.stream().filter(c -> {
-    return I.stream().filter(i -> i.getname() == c.getname()).count() > 0;
-}).collect(Collectors.toList()).forEach(hjUserContactMapper::insert);
-```
-
-- 大于0则相同，小于等于0不同
-
-### 除法
-
-- Math.round()
-- `DecimalFormat decimalFormat = new DecimalFormat(".00");`
-
-#### 小数点后取两位
-
-- `String.format("%.2f", num)`
-
-### 各项求比例后和为100%
-
-#### 最大余额法
-
-```java
-/**
-* 最大余额法 求百分比
-*/
-public static List<Integer> calculatePercent(List<Long> list) {
-    Long sum = list.stream().reduce(Long::sum).get();
-    List<Integer> valueInts = new ArrayList<>();
-    List<Double> ds = new ArrayList<>();
-    for (Long percent : list) {
-        double value = percent * 100 / (double) sum;
-        //设置对应的百分比
-        int valueInt = (int) value;
-        valueInts.add(valueInt);
-        //获取小数点后的值
-        double d = value - valueInt;
-        ds.add(d);
-    }
-    //求和：当前各项百分比合计。由于我们舍弃了小数位，所以该合计只会小于等于100
-    int curSum = valueInts.stream().mapToInt(e -> e).sum();
-    while (curSum < 100) {
-        //找出小数余额最大的组，对其进行加1
-        Integer max = valueInts.stream().max(Comparator.comparingDouble(e -> ds.get(valueInts.indexOf(e))
-                                                                       )).get();
-        valueInts.set(valueInts.indexOf(max), max + 1);
-        //当前这个数已经加1了，不应该参与下一轮的竞选
-        ds.set(valueInts.indexOf(max + 1), 0.0);
-        curSum++;
-    }
-    return valueInts;
-}
-```

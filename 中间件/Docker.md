@@ -1,3 +1,5 @@
+# Docker
+
 ## 简介
 
 - 不同环境的操作系统不同，Docker如何解决的
@@ -56,7 +58,7 @@
   - 目录挂载：由docker管理，目录路径较长
   - 文件挂载：手动创建，目录清晰，但需要自己管理
 
-## DockerFile
+# DockerFile
 
 ### 结构
 
@@ -97,7 +99,7 @@
       ENTRYPOINT java -jar 目标路径/xxx.jar
       ```
 
-## Docker Compose
+# Docker Compose
 
 ### 简介
 
@@ -171,7 +173,67 @@
 - 修改各个微服务内服务调用时的ip，用服务名替代
 - 将docker-compose和所有微服务的dockerfile和jar打包到服务器上
 
-## 私有仓库
+## 发版流程
+
+- 将jar包放到对应的文件加下，名字要和DockerFile中的文件名对应
+
+  - DockerFile 模板
+
+    ```dockerfile
+    # 第一阶段
+    FROM openjdk:8 as builder
+    # 工作目录为/build 相对目录
+    WORKDIR /build
+    # 设置常量
+    ARG JAR_FILE=./huijun-hr.jar
+    # 拷贝target/huijun.jar  到/build/app.jar
+    COPY ${JAR_FILE} app.jar
+    # 执行shell命令 使用分层 这里就是解压jar包分层成各个目录  目的是为了更新的时候局部更新 加快镜像pull速度
+    # /build/dependencies
+    # /build/snapshot-dependencies
+    # /build/spring-boot-loader
+    # /build/application
+    RUN java -Djarmode=layertools -jar app.jar extract && rm app.jar
+    
+    # 第二阶段 引用第一阶段的镜像builder
+    FROM openjdk:8
+    MAINTAINER 569421432@qq.com
+    ENV JAVA_OPTS="-Xms1024m -Xmx1024m -Duser.timezone=GMT+8 -DNACOS_HOST=10.1.3.160 -Djava.security.egd=file:/dev/./urandom"
+    ENV JAVA_EX="-DMYSQL_HOST=192.168.8.91 -DMYSQL_PORT=3306 -DMYSQL_PWD=hj@123456 -DMYSQL_DB=bling -DREDIS_HOST=192.168.8.91 -DREDIS_PWD=hj@123456 -Dspring.profiles.active=test"
+    WORKDIR /opt
+    
+    # 将builder（第一阶段）的文件copy到/opt
+    COPY --from=builder /build/dependencies/ ./
+    COPY --from=builder /build/snapshot-dependencies/ ./
+    COPY --from=builder /build/spring-boot-loader/ ./
+    COPY --from=builder /build/application/ ./
+    
+    EXPOSE 8080
+    
+    # 容器启动时执行
+    CMD java $JAVA_OPTS $JAVA_EX org.springframework.boot.loader.JarLauncher
+    ```
+
+- 编写一个方便重新启动的文件 `restart.sh` 
+
+  ```sh
+  #!/bin/bash
+  if [ "$1" = '' ]; then
+      echo "You need to enter a project name!"
+  else
+      docker-compose stop $1
+      docker-compose rm -f $1
+      docker-compose build $1
+      docker-compose up -d $1
+      echo "ok !!!"
+  fi
+  ```
+
+- ./restart.sh huijun-hr
+
+
+
+# 私有仓库
 
 ### 搭建
 
@@ -211,6 +273,8 @@
 ### 使用
 
 - 推送镜像需要先tag（重命名镜像）
+
+# 整合
 
 ## Docker创建Redis容器
 

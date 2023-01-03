@@ -120,3 +120,160 @@ excelWrite.finish();
 
 ## 模板下载
 
+### 下拉框
+
+```java
+public void template(HttpServletResponse response) throws IOException {
+    String fileName = "人员导入模板.xls";
+
+    WriteCellStyle headWriteCellStyle = new WriteCellStyle();
+    // 设置背景颜色
+    headWriteCellStyle.setFillForegroundColor(IndexedColors.WHITE.getIndex());
+    // 设置头字体
+    WriteFont headWriteFont = new WriteFont();
+    headWriteFont.setFontHeightInPoints((short)14);
+    // 字体加粗
+    headWriteFont.setBold(true);
+    headWriteCellStyle.setWriteFont(headWriteFont);
+    // 设置头居中
+    headWriteCellStyle.setHorizontalAlignment(HorizontalAlignment.CENTER);
+    // 内容策略
+    WriteCellStyle contentWriteCellStyle = new WriteCellStyle();
+    // 设置内容字体
+    WriteFont contentWriteFont = new WriteFont();
+    contentWriteFont.setFontHeightInPoints((short)12);
+    contentWriteFont.setFontName("宋体");
+    contentWriteCellStyle.setWriteFont(contentWriteFont);
+    // 设置 水平居中
+    contentWriteCellStyle.setHorizontalAlignment(HorizontalAlignment.CENTER);
+    // 设置 垂直居中
+    contentWriteCellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+    // 设置单元格格式为 文本
+    DataFormatData dataFormatData = new DataFormatData();
+    dataFormatData.setIndex((short)49);
+    contentWriteCellStyle.setDataFormatData(dataFormatData);
+
+    HorizontalCellStyleStrategy horizontalCellStyleStrategy =
+        new HorizontalCellStyleStrategy(headWriteCellStyle, contentWriteCellStyle);
+
+    //示例数据
+    List<HjUserExportExcelVO> example = this.list(Wrappers.<HjUserInfoDTO>query().last("limit 3")).stream().map(m ->
+                                                                                                                getHjUserInfoById(m.getId())
+                                                                                                               ).collect(Collectors.toList()).stream().map(m -> {
+        HjUserExportExcelVO vo = new HjUserExportExcelVO();
+        BeanUtil.copyProperties(m, vo);
+        vo.setCompanys(m.getCompany().getName());
+        vo.setDepts(m.getDept().get(0).getName());
+        return vo;
+    }).collect(Collectors.toList());
+    response.setCharacterEncoding("UTF-8");
+    response.setHeader("content-Type", "application/vnd.ms-excel");
+    response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8"));
+
+    // 设置表名，引脚名，文件格式，list数据
+    EasyExcel.write(response.getOutputStream(), HjUserExportExcelVO.class)
+        .registerWriteHandler(horizontalCellStyleStrategy)
+        .registerWriteHandler(new SpinnerWriteHandler())
+        .sheet("模板")
+        .doWrite(example);
+}
+```
+
+```java
+@Component
+@NoArgsConstructor
+public class SpinnerWriteHandler implements SheetWriteHandler {
+
+    private static SysDeptService sysDeptService;
+    private static SysDictServiceImpl sysDictService;
+
+    @Autowired
+    public void init(SysDeptService sysDeptService, SysDictServiceImpl sysDictService){
+        SpinnerWriteHandler.sysDeptService = sysDeptService;
+        SpinnerWriteHandler.sysDictService = sysDictService;
+    }
+
+    @Override
+    public void afterSheetCreate(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {
+        //部门数据
+        List<String> dept = sysDeptService.getDepts();
+        String[] depts = dept.toArray(new String[dept.size()]);
+        List<String> company = sysDeptService.getCompanys();
+        String[] companys =  company.toArray(new String[company.size()]);
+        Map<Integer, String[]> mapDropDown = new HashMap<>();
+
+        //员工属性
+        List<Dict> userType = sysDictService.getByType("user_type");
+        String[] userTypes = userType.stream().map(Dict::getValue).collect(Collectors.toList()).toArray(new String[userType.size()]);
+
+        //证件类型
+        List<Dict> uidType = sysDictService.getByType("id_type");
+        String[] uidTypes = uidType.stream().map(Dict::getValue).collect(Collectors.toList()).toArray(new String[uidType.size()]);
+
+        //政治面貌
+        List<Dict> upolotical = sysDictService.getByType("politic_countenance");
+        String[] upoloticals = upolotical.stream().map(Dict::getValue).collect(Collectors.toList()).toArray(new String[upolotical.size()]);
+
+        //生育状况
+        List<Dict> ureproductive = sysDictService.getByType("reproductive");
+        String[] ureproductives = ureproductive.stream().map(Dict::getValue).collect(Collectors.toList()).toArray(new String[ureproductive.size()]);
+
+        //婚姻状况
+        List<Dict> umarital = sysDictService.getByType("marital");
+        String[] umaritals = umarital.stream().map(Dict::getValue).collect(Collectors.toList()).toArray(new String[umarital.size()]);
+
+        //合同类型
+        List<Dict> ctype = sysDictService.getByType("contract_type");
+        String[] ctypes = ctype.stream().map(Dict::getValue).collect(Collectors.toList()).toArray(new String[ctype.size()]);
+
+        //学历类型
+        List<Dict> etype = sysDictService.getByType("edu_type");
+        String[] etypes = etype.stream().map(Dict::getValue).collect(Collectors.toList()).toArray(new String[etype.size()]);
+
+        //员工状态
+        List<Dict> userState = sysDictService.getByType("user_state");
+        String[] userStates = userState.stream().map(Dict::getValue).collect(Collectors.toList()).toArray(new String[userState.size()]);
+
+        //职称级别
+        List<Dict> rankLevel = sysDictService.getByType("rank_level");
+        String[] rankLevels = rankLevel.stream().map(Dict::getValue).collect(Collectors.toList()).toArray(new String[rankLevel.size()]);
+
+
+        // 这里的key值 对应导出列的顺序 从0开始
+        mapDropDown.put(0, companys);
+        mapDropDown.put(1, depts);
+        mapDropDown.put(5, userTypes);
+        mapDropDown.put(6, uidTypes);
+        mapDropDown.put(11, upoloticals);
+        mapDropDown.put(12, ureproductives);
+        mapDropDown.put(13, umaritals);
+        mapDropDown.put(14, ctypes);
+        mapDropDown.put(17, etypes);
+        mapDropDown.put(23, userStates);
+        mapDropDown.put(25, rankLevels);
+        Sheet sheet = writeSheetHolder.getSheet();
+        /// 开始设置下拉框
+        DataValidationHelper helper = sheet.getDataValidationHelper();// 设置下拉框
+        for (Map.Entry<Integer, String[]> entry : mapDropDown.entrySet())
+        {
+            /*** 起始行、终止行、起始列、终止列 **/
+            CellRangeAddressList addressList = new CellRangeAddressList(1, 1000, entry.getKey(), entry.getKey());
+            /*** 设置下拉框数据 **/
+            DataValidationConstraint constraint = helper.createExplicitListConstraint(entry.getValue());
+            DataValidation dataValidation = helper.createValidation(constraint, addressList);
+            /*** 处理Excel兼容性问题 **/
+            if (dataValidation instanceof XSSFDataValidation)
+            {
+                dataValidation.setSuppressDropDownArrow(true);
+                dataValidation.setShowErrorBox(true);
+            }
+            else
+            {
+                dataValidation.setSuppressDropDownArrow(false);
+            }
+            sheet.addValidationData(dataValidation);
+        }
+    }
+}
+```
+

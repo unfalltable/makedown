@@ -638,11 +638,41 @@ public static Connection getConnection(){
 - 本地缓存（SqlSession）
 - 
 
-## Plan
+# 技巧
 
-- [ ] 了解velocity
-- [ ] 基于Filter－Chain模式的插件体系
-- [ ] SQLParser 
-- [ ] StatFilter插件
-- [ ] 线上分析数据库
+## 一对多表修改
 
+```java
+/**
+*  修改信息通用方法
+*  exists 数据库存在的记录
+*  params 修改时传的记录
+*  T 是实体pojo
+*  S 是对应的service对象，需要继承 IService
+*  id 是一的id（主表id）
+*  key 存id，value存记录
+*/
+public <T, S extends IService> Boolean updateCom(HashMap<String, T> exists, HashMap<String, T> params, S s, Long id){
+    for (Map.Entry<String, T> entry : params.entrySet()) {
+        //修改
+        if (exists.containsKey(entry.getKey())) {
+            s.update(entry.getValue(), new QueryWrapper<T>().eq("id", entry.getKey()));
+        }
+        //增加
+        if ("null".equals(entry.getKey())) {
+            T value = entry.getValue();
+            BeanUtil.setFieldValue(value, "uid", id);
+            s.save(value);
+        }
+    }
+    for (Map.Entry<String, T> entry : exists.entrySet()) {
+        //删除
+        if (!params.containsKey(entry.getKey())) {
+            s.remove(new QueryWrapper<T>().eq("id", entry.getKey()));
+        }
+    }
+    exists.clear();
+    params.clear();
+    return true;
+}
+```

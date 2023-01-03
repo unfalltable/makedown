@@ -1,4 +1,4 @@
- ![image-20210706111533981](C:\Users\15630\AppData\Roaming\Typora\typora-user-images\image-20210706111533981.png)
+ ![image-20210706111533981](../pic/image-20210706111533981.png)
 
 ## HTML和CSS
 

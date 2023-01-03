@@ -1,4 +1,3 @@
-- 把SpringCloud看完
 - 把sercutity看了，单点登录、获取在线用户等、鉴权等
 - 看sercutity的加密
 - 看一下 BindingResult
@@ -13,3 +12,13 @@
 - 看一下月份统计数据接口
 - 看一下mybatisplus注入器
 - 写一个dockerCompose 和 dockerfile的案例
+- 了解velocity
+- 基于Filter－Chain模式的插件体系
+- SQLParser 
+- StatFilter插件
+- 线上分析数据库
+- 项目搞透
+- Sentinel
+- 工作流
+- nacos
+- 内部接口
